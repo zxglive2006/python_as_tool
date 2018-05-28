@@ -15,8 +15,8 @@ plt.rcParams['font.sans-serif'] = ['SimHei']
 # print(pd.Series(RandomNumber).value_counts())
 # print(pd.Series(RandomNumber).value_counts() / 100)
 
-HSRet300 = pd.read_csv('./data/return300.csv')
-print(HSRet300.head())
+# HSRet300 = pd.read_csv('./data/return300.csv')
+# print(HSRet300.head())
 # density = stats.kde.gaussian_kde(HSRet300.iloc[:, 1])
 # bins = np.arange(-5, 5, 0.02)
 # plt.subplot(211)
@@ -35,7 +35,19 @@ print(HSRet300.head())
 # print(dd.sum())
 # print(stats.binom.cdf(20, 100, 0.5))
 
-ret = HSRet300.iloc[:, 1]
-p = len(ret[ret > 0]) / len(ret)
-print(p)
-print(stats.binom.pmf(6, 10, p))
+# ret = HSRet300.iloc[:, 1]
+# p = len(ret[ret > 0]) / len(ret)
+# print(p)
+# print(stats.binom.pmf(6, 10, p))
+
+# plt.plot(np.arange(0, 5, 0.002), stats.chi.pdf(np.arange(0, 5, 0.002), 3))
+# # plt.title('Probability Density Plot of Chi-Square Distribution')
+# # plt.show()
+
+x = np.arange(-4, 4.004, 0.004)
+plt.plot(x, stats.norm.pdf(x), label='Normal')
+plt.plot(x, stats.t.pdf(x, 5), label='df=5')
+plt.plot(x, stats.t.pdf(x, 30), label='df=30')
+plt.legend()
+
+plt.show()
