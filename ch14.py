@@ -7,6 +7,8 @@ import pandas as pd
 import matplotlib.pylab as plt
 from scipy import stats
 
+# 设置DataFrame显示宽度
+pd.set_option("display.width", 120)
 # 用来正常显示中文标签
 plt.rcParams['font.sans-serif'] = ['SimHei']
 
@@ -44,10 +46,23 @@ plt.rcParams['font.sans-serif'] = ['SimHei']
 # # plt.title('Probability Density Plot of Chi-Square Distribution')
 # # plt.show()
 
-x = np.arange(-4, 4.004, 0.004)
-plt.plot(x, stats.norm.pdf(x), label='Normal')
-plt.plot(x, stats.t.pdf(x, 5), label='df=5')
-plt.plot(x, stats.t.pdf(x, 30), label='df=30')
-plt.legend()
+# x = np.arange(-4, 4.004, 0.004)
+# plt.plot(x, stats.norm.pdf(x), label='Normal')
+# plt.plot(x, stats.t.pdf(x, 5), label='df=5')
+# plt.plot(x, stats.t.pdf(x, 30), label='df=30')
+# plt.legend()
+#
+# plt.show()
+
+TRD_index = pd.read_csv('./data/TRD_Index.txt', sep='\t')
+SHIndex = TRD_index[TRD_index.Indexcd==1]
+SZIndex = TRD_index[TRD_index.Indexcd==399106]
+plt.scatter(SHIndex.Retindex, SZIndex.Retindex)
+plt.title(u'上证综指与深圳成指收益率的散点图')
+plt.xlabel(u'上证综指收益率')
+plt.ylabel(u'深圳成指收益率')
+
+SZIndex.index = SHIndex.index
+print(SZIndex.Retindex.corr(SHIndex.Retindex))
 
 plt.show()
