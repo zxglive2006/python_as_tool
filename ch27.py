@@ -36,8 +36,19 @@ def candlePlot(seriesData, title='a'):
     return plt.show()
 
 
-ssec2015 = pd.read_csv(r'data\SSEC2015.csv')
-ssec2015 = ssec2015.iloc[:, 1:]
-ssec2015.set_index('Date', inplace=True)
-# print(ssec2015.head())
-candlePlot(ssec2015, '上证综指2015年3月份K线图')
+# ssec2015 = pd.read_csv(r'data\SSEC2015.csv')
+# ssec2015 = ssec2015.iloc[:, 1:]
+# ssec2015.set_index('Date', inplace=True)
+# # print(ssec2015.head())
+# candlePlot(ssec2015, '上证综指2015年3月份K线图')
+ssec2012 = pd.read_csv(r'data\SSEC2012.csv')
+ssec2012 = ssec2012.iloc[:, 1:]
+ssec2012.set_index('Date', inplace=True)
+ssec2012.index = pd.to_datetime(ssec2012.index, format='%Y-%m-%d')
+
+Close = ssec2012.Close
+Open = ssec2012.Open
+ClOp = Close - Open
+Shape = [0, 0, 0]
+lag1ClOp = ClOp.shift(1)
+lag2ClOp = ClOp.shift(2)
