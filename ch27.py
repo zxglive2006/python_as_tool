@@ -44,11 +44,57 @@ def candlePlot(seriesData, title='a'):
 ssec2012 = pd.read_csv(r'data\SSEC2012.csv')
 ssec2012 = ssec2012.iloc[:, 1:]
 ssec2012.set_index('Date', inplace=True)
-ssec2012.index = pd.to_datetime(ssec2012.index, format='%Y-%m-%d')
+# ssec2012.index = pd.to_datetime(ssec2012.index, format='%Y-%m-%d')
 
 Close = ssec2012.Close
 Open = ssec2012.Open
 ClOp = Close - Open
+print(ClOp.head())
 Shape = [0, 0, 0]
 lag1ClOp = ClOp.shift(1)
 lag2ClOp = ClOp.shift(2)
+# 捕捉绿色实体、十字星和红色实体
+for i in range(3, len(ClOp)):
+    if all([lag2ClOp[i] < -11, abs(lag1ClOp[i]) < 2, ClOp[i] > 6, abs(ClOp[i]) > abs(lag2ClOp[i] * 0.5)]):
+        Shape.append(1)
+    else:
+        Shape.append(0)
+print(Shape.index(1))
+# 准备数据
+lagOpen = Open.shift(1)
+lagClose = Close.shift(1)
+lag2Close = Close.shift(2)
+# 捕捉符合十字星位置的蜡烛图
+Doji = [0, 0, 0]
+for i in range(3, len(Open)):
+    if all([lagOpen[i] < Open[i], lagOpen[i] < lag2Close[i], lagClose[i] < Open[i], lagClose[i] < lag2Close[i]]):
+        Doji.append(1)
+    else:
+        Doji.append(0)
+print(Doji.count(1))
+# 定义下跌趋势
+# 先计算收益率
+ret = Close / Close.shift(1) - 1
+lag1ret = ret.shift(1)
+lag2ret = ret.shift(2)
+# 寻找下跌趋势
+Trend = [0, 0, 0]
+for i in range(3, len(ret)):
+    if all([lag1ret[i] < 0, lag2ret[i] < 0]):
+        Trend.append(1)
+    else:
+        Trend.append(0)
+# 寻找“早晨之星”
+StarSig = []
+for i in range(len(Trend)):
+    if all([Shape[i] == 1, Doji[i] == 1, Trend[i] == 1]):
+        StarSig.append(1)
+    else:
+        StarSig.append(0)
+# 捕捉上证综指2012年出现“早晨之星”形态的日期
+for i in range(len(StarSig)):
+    if StarSig[i] == 1:
+        print(ssec2012.index[i])
+
+ssec201209 = ssec2012['2012-08-21': '2012-09-30'].copy()
+candlePlot(ssec201209, title=u'上证综指2012年9月份的日K线图')
