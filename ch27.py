@@ -96,5 +96,33 @@ for i in range(len(StarSig)):
     if StarSig[i] == 1:
         print(ssec2012.index[i])
 
-ssec201209 = ssec2012['2012-08-21': '2012-09-30'].copy()
-candlePlot(ssec201209, title=u'上证综指2012年9月份的日K线图')
+# ssec201209 = ssec2012['2012-08-21': '2012-09-30'].copy()
+# candlePlot(ssec201209, title=u'上证综指2012年9月份的日K线图')
+ssec2011 = pd.read_csv(r'data\SSEC2011.csv')
+ssec2011 = ssec2011.iloc[:, 1:]
+ssec2011.set_index('Date', inplace=True)
+print(ssec2011.head())
+# 提取价格数据
+Close11 = ssec2011.Close
+Open11 = ssec2011.Open
+# 刻画捕捉符合“乌云盖顶”形态的连续两个蜡烛实体
+lagClose11 = Close11.shift(1)
+lagOpen11 = Open11.shift(1)
+Cloud = pd.Series(0, index=Close11.index)
+print(Cloud.head())
+for i in range(1, len(Close11)):
+    if all([Close11[i] < Open11[i], lagClose11[i] > lagOpen11[i], Open11[i] > lagClose11[i],
+            Close11[i] < 0.5*(lagClose11[i] + lagOpen11[i]), Close11[i] > lagOpen11[i]]):
+        Cloud[i] = 1
+Trend = pd.Series(0, index=Close11.index)
+for i in range(2, len(Close11)):
+    if Close11[i - 1] > Close11[i - 2] > Close11[i - 3]:
+        Trend[i] = 1
+darkCloud = Cloud + Trend
+print(darkCloud[darkCloud == 2])
+
+# ssec201105 = ssec2011['2011-05-01':'2011-05-30'].copy()
+# candlePlot(ssec201105, title='上证综指2011年5月份的日K线图')
+
+ssec201108 = ssec2011['2011-08-01':'2011-08-30'].copy()
+candlePlot(ssec201108, title='上证综指2011年8月份的日K线图')
