@@ -134,8 +134,36 @@ def problem1():
     problem27_1 = pd.read_csv(r'data\problem27-1.csv')
     problem27_1.set_index('date', inplace=True)
     problem27_1_0305 = problem27_1['2013-03-01': '2013-04-30'].copy()
-    print(problem27_1_0305.tail())
-    candlePlot(problem27_1_0305, title='上证综指2013年3--4月份的日K线图')
+    print(problem27_1_0305.head())
+    # 设定日期格式
+    Date = [date2num(datetime.strptime(date, '%Y-%m-%d')) for date in problem27_1_0305.index]
+    problem27_1_0305.loc[:, 'Date'] = Date
+    # 将DataFrame数据转换成List类型
+    listData = []
+    for i in range(len(problem27_1_0305)):
+        a = [problem27_1_0305.Date[i],
+             problem27_1_0305.Open[i], problem27_1_0305.High[i],
+             problem27_1_0305.Low[i], problem27_1_0305.Close[i]]
+        listData.append(a)
+    # 设定绘图相关参数
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True, figsize=(15, 8))
+    mondays = WeekdayLocator(MONDAY)
+    weekFormatter = DateFormatter('%y %b %d')
+    ax1.xaxis.set_major_locator(mondays)
+    ax1.xaxis.set_minor_locator(DayLocator())
+    ax1.xaxis.set_major_formatter(weekFormatter)
+    ax1.set_title('上证综指2013年3-4月份的日K线图')
+    ax1.set_ylabel('Price')
+    ax1.grid(True)
+    # 调用candlestick_ohlc函数
+    candlestick_ohlc(ax1, listData, width=0.7, colorup='r', colordown='g')
+    ax2.set_ylabel('Volume')
+    ax2.bar(problem27_1_0305.loc[:, 'Date'], problem27_1_0305.loc[:, 'Volume'], width=0.6)
+    ax2.grid(True)
+    # 设定x轴日期显示角度
+    plt.setp(plt.gca().get_xticklabels(), rotation=50, horizontalalignment='center')
+    return plt.show()
 
 
-problem1()
+if __name__ == '__main__':
+    problem1()
