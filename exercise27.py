@@ -9,4 +9,4 @@ shzheng = pd.read_csv(r'data\problem27-1.csv', index_col='date')
 shzheng.index.name = 'Date'
 shzheng.index = pd.to_datetime(shzheng.index, format='%Y-%m-%d')
 shzheng13 = shzheng['2013-03-01':'2013-05-31'].copy()
-cd.candleVolume(shzheng13, candletitle='Candle Plot of Shanghai Composite Index', bartitle='volume')
+cd.candleVolume(shzheng13, candletitle='上证指数', bartitle='成交量')

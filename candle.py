@@ -124,13 +124,13 @@ def candleLinePlots(candleData,candleTitle='a',**kwargs):
     plt.show()
     return(1)
 
-#蜡烛图与成交量柱状图
-def candleVolume(seriesData,candletitle='a',bartitle='b'):
-    Date=[date2num(date) for date in seriesData.index]
-    seriesData.index=list(range(len(Date)))
-    seriesData['Date']=Date
-    listData=zip(seriesData.Date,seriesData.Open,seriesData.High,seriesData.Low,
-                 seriesData.Close)
+
+# 蜡烛图与成交量柱状图
+def candleVolume(seriesData, candletitle='a', bartitle='b'):
+    Date = [date2num(date) for date in seriesData.index]
+    seriesData.index = list(range(len(Date)))
+    seriesData['Date'] = Date
+    listData = zip(seriesData.Date, seriesData.Open, seriesData.High, seriesData.Low, seriesData.Close)
     ax1 = plt.subplot(211)
     ax2 = plt.subplot(212)
     for ax in ax1,ax2:
@@ -140,25 +140,25 @@ def candleVolume(seriesData,candletitle='a',bartitle='b'):
         ax.xaxis.set_minor_locator(DayLocator())
         ax.xaxis.set_major_formatter(weekFormatter)
         ax.grid(True)
-
-    ax1.set_ylim(seriesData.Low.min()-2,seriesData.High.max()+2)
+    ax1.set_ylim(seriesData.Low.min()-2, seriesData.High.max()+2)
     ax1.set_ylabel('蜡烛图及收盘价线')
-    candlestick_ohlc(ax1,listData, width=0.7,colorup='r',colordown='g')
-    plt.setp(plt.gca().get_xticklabels(),\
-            rotation=45,horizontalalignment='center')
+    candlestick_ohlc(ax1, listData, width=0.7, colorup='r', colordown='g')
+    plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='center')
     ax1.autoscale_view()
     ax1.set_title(candletitle)
-    ax1.plot(seriesData.Date,seriesData.Close,\
-               color='black',label='收盘价')
+    ax1.plot(seriesData.Date, seriesData.Close, color='black', label='收盘价')
     ax1.legend(loc='best')
-
     ax2.set_ylabel('成交量')
-    ax2.set_ylim(0,seriesData.Volume.max()*3)
-    ax2.bar(np.array(Date)[np.array(seriesData.Close>=seriesData.Open)]
-    ,height=seriesData.iloc[:,4][np.array(seriesData.Close>=seriesData.Open)]
-    ,color='r',align='center')
-    ax2.bar(np.array(Date)[np.array(seriesData.Close<seriesData.Open)]
-    ,height=seriesData.iloc[:,4][np.array(seriesData.Close<seriesData.Open)]
-    ,color='g',align='center')
+    ax2.set_ylim(0, seriesData.Volume.max()*3)
+    ax2.bar(
+        np.array(Date)[np.array(seriesData.Close>=seriesData.Open)],
+        height=seriesData.iloc[:, 4][np.array(seriesData.Close >= seriesData.Open)],
+        color='r',
+        align='center')
+    ax2.bar(
+        np.array(Date)[np.array(seriesData.Close<seriesData.Open)],
+        height=seriesData.iloc[:,4][np.array(seriesData.Close<seriesData.Open)],
+        color='g',
+        align='center')
     ax2.set_title(bartitle)
-    return(plt.show())
+    return plt.show()
