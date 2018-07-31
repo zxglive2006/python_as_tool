@@ -50,7 +50,7 @@ def candleLinePlots(candleData, candleTitle='a', **kwargs):
     # 如果不定长参数有值，则分成两个子图
     flag = 0
     if kwargs:
-        if 'splitFigures' in kwargs.keys() and kwargs['splitFigures']:
+        if 'Data' in kwargs.keys():
             ax = plt.subplot(211)
             ax2 = plt.subplot(212)
             flag = 1
@@ -71,15 +71,15 @@ def candleLinePlots(candleData, candleTitle='a', **kwargs):
                     plt.legend(loc='best')
                     # 二维数据有2个columns
                 elif all([kwargs[key].ndim == 2, len(kwargs[key].columns) == 2]):
-                    plt.plot(kwargs[key].iloc[:,0], linestyle = 'dashed', label=kwargs[key].iloc[:,0].name)
-                    plt.plot(kwargs[key].iloc[:,1], linestyle = 'dashed', label=kwargs[key].iloc[:,1].name)
+                    plt.plot(kwargs[key].iloc[:, 0], linestyle='dashed', label=kwargs[key].iloc[:, 0].name)
+                    plt.plot(kwargs[key].iloc[:, 1], linestyle='dashed', label=kwargs[key].iloc[:, 1].name)
                     plt.legend(loc='best')
                     # 二维数据有3个columns
                 elif all([kwargs[key].ndim == 2, len(kwargs[key].columns)==3]):
-                    plt.plot(kwargs[key].iloc[:,0], linestyle = 'dashed', label=kwargs[key].iloc[:,0].name)
-                    plt.plot(kwargs[key].iloc[:,1], linestyle='dashed', label=kwargs[key].iloc[:,1].name)
+                    plt.plot(kwargs[key].iloc[:, 0], linestyle='dashed', label=kwargs[key].iloc[:, 0].name)
+                    plt.plot(kwargs[key].iloc[:, 1], linestyle='dashed', label=kwargs[key].iloc[:, 1].name)
                     plt.bar(
-                        left=kwargs[key].iloc[:,2].index, height=kwargs[key].iloc[:, 2],
+                        left=kwargs[key].iloc[:, 2].index, height=kwargs[key].iloc[:, 2],
                         color='r', label=kwargs[key].iloc[:, 2].name)
                     plt.legend(loc='best')
     mondays = WeekdayLocator(MONDAY)

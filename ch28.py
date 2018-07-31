@@ -2,6 +2,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import candle
+
 
 def momentum(price, period):
     lagPrice = price.shift(period)
@@ -44,3 +46,8 @@ print(momentum(Close, 5).tail())
 # plt.ylabel('Momentum5')
 #
 # plt.show()
+
+momen35 = momentum(Close, 35)
+candle.candleLinePlots(
+    Vanke['2015'].copy(), candleTitle='万科股票2015年日K线图', Data=momen35['2015'], ylabel='35日动量'
+)
