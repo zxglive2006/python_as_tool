@@ -31,6 +31,22 @@ def rsi(price, period=6):
     return Rsi
 
 
+def strat(tradeSignal, ret):
+    indexDate = tradeSignal.index
+    ret = ret[indexDate]
+    tradeRet = ret * tradeSignal
+    tradeRet[tradeRet == (-0)] = 0
+    winRate = len(tradeRet[tradeRet > 0]) / len(tradeRet[tradeRet != 0])
+    meanWin = sum(tradeRet[tradeRet > 0]) / len(tradeRet[tradeRet > 0])
+    meanLoss = sum(tradeRet[tradeRet < 0]) / len(tradeRet[tradeRet < 0])
+    perform = {
+        "winRate": winRate,
+        "meanWin": meanWin,
+        "meanLost": meanLoss
+    }
+    return perform
+
+
 BOCM = pd.read_csv(r'./data/BOCM.csv')
 BOCM.index = BOCM.iloc[:, 1]
 BOCM.index = pd.to_datetime(BOCM.index, format="%Y-%m-%d")
@@ -66,6 +82,30 @@ signal[signal >= 1] = 1
 signal[signal <= -1] = -1
 signal = signal.dropna()
 # print(signal)
+tradSig = signal.shift(1)
+print(tradSig.head())
+ret = BOCMclp / BOCMclp.shift(1) - 1
+ret = ret[tradSig.index]
+print(ret.head())
+buy = tradSig[tradSig == 1]
+buyRet = ret[tradSig == 1] * buy
+print(buyRet.head())
+sell = tradSig[tradSig == -1]
+sellRet = ret[tradSig == -1] * sell
+print(sellRet.head())
+tradeRet = ret * tradSig
+print("tradeRet")
+print(tradeRet.head())
+
+# plt.subplot(211)
+# plt.plot(buyRet, label="buyRet", color="g")
+# plt.plot(sellRet, label="sellRet", color="r", linestyle="dashed")
+# plt.title("RSI指标交易策略")
+# plt.ylabel('strategy return')
+# plt.legend()
+# plt.subplot(212)
+# plt.plot(ret, 'b')
+# plt.ylabel('stock return')
 
 # plt.plot(Rsi6['2015-01-03':], label="Rsi6")
 # plt.plot(Rsi24['2015-01-03':], label="Rsi24", color="red", linestyle='dashed')
@@ -74,3 +114,13 @@ signal = signal.dropna()
 # plt.legend()
 #
 # plt.show()
+
+BuyOnly = strat(buy, ret)
+SellOnly = strat(sell, ret)
+Trade = strat(tradSig, ret)
+Test = pd.DataFrame({
+    "BuyOnly": BuyOnly,
+    "SellOnly": SellOnly,
+    "Trade": Trade
+})
+print(Test)
