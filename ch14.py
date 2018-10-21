@@ -56,7 +56,7 @@ plt.rcParams['font.sans-serif'] = ['SimHei']
 
 TRD_index = pd.read_csv('./data/TRD_Index.txt', sep='\t')
 SHIndex = TRD_index[TRD_index.Indexcd==1]
-SZIndex = TRD_index[TRD_index.Indexcd==399106]
+SZIndex = TRD_index[TRD_index.Indexcd == 399106]
 plt.scatter(SHIndex.Retindex, SZIndex.Retindex)
 plt.title(u'上证综指与深圳成指收益率的散点图')
 plt.xlabel(u'上证综指收益率')
