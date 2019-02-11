@@ -1,7 +1,7 @@
 # encoding: UTF-8
 import pandas as pd
 
-history = pd.read_csv(".\exercise_data\history.csv")
+history = pd.read_csv(r".\exercise_data\history.csv")
 print(history.head())
 
 print("Emerging.Markets statistics data")
