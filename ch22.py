@@ -27,11 +27,30 @@ def basic_time_series():
 
 
 def select_time_series():
+    Index = pd.read_csv(".\data\TRD_Index.csv", index_col="Trddt")
+    SHIndex = Index[Index.Indexcd == 1]
+    SHIndex.index = pd.to_datetime(SHIndex.index)
+    SHIndexPart = SHIndex["2014-10-08":"2014-10-31"]
+    print(SHIndexPart.head())
+    print(SHIndexPart.tail())
+
+
+def describe_time_series():
     Index = pd.read_csv(".\data\TRD_Index.txt", sep="\t", index_col="Trddt")
     SHIndex = Index[Index.Indexcd == 1]
-    print(SHIndex.head())
+    Clsindex = SHIndex.Clsindex
+    print(Clsindex.head())
+    print(Clsindex.tail())
+    print(Clsindex.max())
+    print(Clsindex.min())
+    print(Clsindex.mean())
+    print(Clsindex.median())
+    print(Clsindex.std())
+    print(Clsindex.describe())
+    Clsindex.hist()
+    plt.show()
 
 
 if __name__ == '__main__':
     print("ch22")
-    select_time_series()
+    describe_time_series()
