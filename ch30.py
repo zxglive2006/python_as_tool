@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from movingAverage import smaCal, wmaCal, ewmaCal
+import movingAverage as ma
 
 pd.set_option("display.width", 120)
 # 设定字体类型，用于正确显示中文
@@ -23,7 +23,7 @@ def show_sma():
     # plt.xlabel('date')
     # plt.ylabel('Close')
     # plt.title("2014年青岛啤酒股票收盘价时序图")
-    Sma5 = smaCal(Close, 5)
+    Sma5 = ma.smaCal(Close, 5)
     print(Sma5.tail())
     plt.plot(Close[4:], label="Close", color="g")
     plt.plot(Sma5[4:], label="Sma5", color="r", linestyle="dashed")
@@ -45,7 +45,7 @@ def show_wma():
     m1Close = Close[0:5]
     wec = w * m1Close
     print(sum(wec))
-    Wma5 = wmaCal(Close, w)
+    Wma5 = ma.wmaCal(Close, w)
     for i in range(4, len(Wma5)):
         Wma5[i] = sum(w * Close[(i-4):(i+1)])
     print(Wma5[2:7])
@@ -63,7 +63,7 @@ def show_ewma():
     TsingTao = TsingTao.iloc[:, 2:]
     print(TsingTao.head(n=10))
     Close = TsingTao.Close
-    Ema5 = ewmaCal(Close, 5, 0.2)
+    Ema5 = ma.ewmaCal(Close, 5, 0.2)
     print(Ema5.head())
     print(Ema5.tail())
     plt.plot(Close[4:], label="Close", color="k")
@@ -73,6 +73,32 @@ def show_ewma():
     plt.legend()
 
 
+def show_chinaback():
+    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
+    ChinaBank.index = ChinaBank.iloc[:, 1]
+    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
+    ChinaBank = ChinaBank.iloc[:, 2:]
+    print(ChinaBank.head())
+    CBClose = ChinaBank.Close
+    print(CBClose.describe())
+    Close15 = CBClose["2015"]
+    Sma10 = ma.smaCal(Close15, 10)
+    print(Sma10.tail())
+    weight = np.array(range(1, 11)) / sum(range(1, 11))
+    Wma10 = ma.wmaCal(Close15, weight)
+    print(Wma10.tail())
+    expo = 2 / (len(Close15) + 1)
+    Ema10 = ma.ewmaCal(Close15, 10, expo)
+    print(Ema10.tail())
+    plt.plot(Close15[10:], label="Close", color="k")
+    plt.plot(Sma10[10:], label="Sma10", color="r", linestyle="dashed")
+    plt.plot(Wma10[10:], label="Wma10", color="b", linestyle=":")
+    plt.plot(Ema10[10:], label="Ema10", color="G", linestyle="-.")
+    plt.title("中国银行价格均线")
+    plt.ylim(3.5, 5.5)
+    plt.legend()
+
+
 if __name__ == '__main__':
     print("ch30")
-    show_ewma()
+    show_chinaback()

@@ -14,7 +14,7 @@ def wmaCal(tsPrice, weight):
     arrWeight = np.array(weight)
     Wma = pd.Series(0.0, index=tsPrice.index)
     for i in range(k-1, len(tsPrice)):
-        Wma[i] = sum(arrWeight * tsPrice[(i-k+1):(i+1)]) / k
+        Wma[i] = sum(arrWeight * tsPrice[(i-k+1):(i+1)])
     return Wma
 
 
