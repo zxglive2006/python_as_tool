@@ -147,6 +147,53 @@ def trade_single_ma():
     plt.legend()
 
 
+def trade_double_ma():
+    """
+    双均线交易策略
+    :return:
+    """
+    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
+    ChinaBank.index = ChinaBank.iloc[:, 1]
+    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
+    ChinaBank = ChinaBank.iloc[:, 2:]
+    CBClose = ChinaBank.Close
+    print(CBClose.head())
+    Ssma5 = ma.smaCal(CBClose, 5)
+    Lsma30 = ma.smaCal(CBClose, 30)
+    SLSignal = pd.Series(0, index=Lsma30.index)
+    for i in range(1, len(Lsma30)):
+        if all([Ssma5[i] > Lsma30[i], Ssma5[i - 1] < Lsma30[i - 1]]):
+            SLSignal[i] = 1
+        elif all([Ssma5[i] < Lsma30[i], Ssma5[i - 1] > Lsma30[i - 1]]):
+            SLSignal[i] = -1
+    print(SLSignal[SLSignal==1])
+    print(SLSignal[SLSignal==-1])
+    SLTrade = SLSignal.shift(1)
+    Long = pd.Series(0, index=Lsma30.index)
+    Long[SLTrade == 1] = 1
+    CBRet = CBClose / CBClose.shift(1) - 1
+    LongRet = (Long * CBRet).dropna()
+    winLrate = len(LongRet[LongRet > 0]) / len(LongRet[LongRet != 0])
+    print(winLrate)
+    Short = pd.Series(0, index=Lsma30.index)
+    Short[SLTrade == -1] = -1
+    ShortRet = (Short * CBRet).dropna()
+    winSrate = len(ShortRet[ShortRet > 0]) / len(ShortRet[ShortRet != 0])
+    print(winSrate)
+    SLtradeRet = (SLTrade * CBRet).dropna()
+    winRate = len(SLtradeRet[SLtradeRet > 0]) / len(SLtradeRet[SLtradeRet != 0])
+    print(winRate)
+    cumLong = np.cumprod(1 + LongRet) - 1
+    cumShort = np.cumprod(1 + ShortRet) - 1
+    cumSLtrade = np.cumprod(1 + SLtradeRet) - 1
+    plt.rcParams['axes.unicode_minus'] = False
+    plt.plot(cumSLtrade, label='cumSLtrade', color='k')
+    plt.plot(cumLong, label='cumLong', color='b', linestyle='dashed')
+    plt.plot(cumShort, label='cumShort', color='r', linestyle=':')
+    plt.title('长短期均线交易累计收益率')
+    plt.legend()
+
+
 if __name__ == '__main__':
     print("ch30")
-    trade_single_ma()
+    trade_double_ma()
