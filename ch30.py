@@ -105,6 +105,48 @@ def show_chinaback():
     plt.legend()
 
 
+def trade_single_ma():
+    """
+    单均线交易策略
+    :return:
+    """
+    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
+    ChinaBank.index = ChinaBank.iloc[:, 1]
+    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
+    ChinaBank = ChinaBank.iloc[:, 2:]
+    CBClose = ChinaBank.Close
+    print(CBClose.head())
+    CBSma10 = ma.smaCal(CBClose, 10)
+    SmaSignal = pd.Series(0, CBClose.index)
+    for i in range(10, len(CBClose)):
+        if all([CBClose[i] > CBSma10[i], CBClose[i - 1] < CBSma10[i - 1]]):
+            SmaSignal[i] = 1
+        elif all([CBClose[i] < CBSma10[i], CBClose[i - 1] > CBSma10[i - 1]]):
+            SmaSignal[i] = -1
+    SmaTrade = SmaSignal.shift(1).dropna()
+    SmaBuy = SmaTrade[SmaTrade == 1]
+    print(SmaBuy.head())
+    SmaSell = SmaTrade[SmaTrade == -1]
+    print(SmaSell.head())
+    CBRet = CBClose / CBClose.shift(1) - 1
+    SmaRet = (CBRet * SmaTrade).dropna()
+    print(SmaRet.head())
+    cumStock = np.cumprod(1 + CBRet[SmaRet.index[0]:]) - 1
+    cumTrade = np.cumprod(1 + SmaRet) - 1
+    cumdate = pd.DataFrame({
+        'cumTrade': cumTrade,
+        'cumStock': cumStock
+    })
+    print(cumdate.iloc[-6:, :])
+    # SmaRet[SmaRet == (-0)] = 0
+    smaWinrate = len(SmaRet[SmaRet > 0]) / len(SmaRet[SmaRet != 0])
+    print(smaWinrate)
+    plt.plot(cumStock, label='cumStock', color='k')
+    plt.plot(cumTrade, label='cumTrade', color='r', linestyle=':')
+    plt.title('股票本身与均线交易的累计收益率')
+    plt.legend()
+
+
 if __name__ == '__main__':
     print("ch30")
-    show_chinaback()
+    trade_single_ma()
