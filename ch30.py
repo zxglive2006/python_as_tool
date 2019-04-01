@@ -194,6 +194,46 @@ def trade_double_ma():
     plt.legend()
 
 
+def show_macd():
+    """
+    MACD交易策略
+    :return:
+    """
+    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
+    ChinaBank.index = ChinaBank.iloc[:, 1]
+    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
+    ChinaBank = ChinaBank.iloc[:, 2:]
+    CBClose = ChinaBank.Close
+    # print(CBClose.head())
+    DIF = ma.ewmaCal(CBClose, 12, 2 / (1 + 12)) - ma.ewmaCal(CBClose, 26, 2 / (1 + 26))
+    print(DIF.tail(n=3))
+    DEA = ma.ewmaCal(DIF, 9, 2 / (1 + 9))
+    print(DEA.tail())
+    MACD = DIF - DEA
+    print("MACD tail")
+    print(MACD.tail(n=3))
+    # plt.subplot(211)
+    # plt.plot(DIF['2015'], label='DIF', color='k')
+    # plt.plot(DEA['2015'], label='DEA', color='b', linestyle='dashed')
+    # plt.title("信号线DIF与DEA")
+    # plt.legend()
+    # plt.subplot(212)
+    # plt.bar(left=MACD['2015'].index, height=MACD['2015'], label='MACD', color='r')
+    # plt.legend()
+    macddata = pd.DataFrame()
+    macddata['DIF'] = DIF['2015']
+    macddata['DEA'] = DEA['2015']
+    macddata['MACD'] = MACD['2015']
+    import candle
+    candle.candleLinePlots(
+        ChinaBank['2015'],
+        candleTitle='中国银行2015年日K线图',
+        splitFigures=True,
+        Data=macddata,
+        ylabel='MACD'
+    )
+
+
 if __name__ == '__main__':
     print("ch30")
-    trade_double_ma()
+    show_macd()
