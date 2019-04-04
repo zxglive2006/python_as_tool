@@ -11,13 +11,16 @@ plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
 
-def show_sma():
+def get_tsingtao_close():
     TsingTao = pd.read_csv(r"./data/TsingTao.csv")
-    TsingTao.index = TsingTao.iloc[:,1]
+    TsingTao.index = TsingTao.iloc[:, 1]
     TsingTao.index = pd.to_datetime(TsingTao.index, format="%Y-%m-%d")
     TsingTao = TsingTao.iloc[:, 2:]
-    print(TsingTao.head(n=3))
-    Close = TsingTao.Close
+    return TsingTao.Close
+
+
+def show_sma():
+    Close = get_tsingtao_close()
     # plt.subplot(111)
     # plt.plot(Close, 'k')
     # plt.xlabel('date')
@@ -36,12 +39,7 @@ def show_wma():
     b = np.array([1, 2, 3, 4, 5])
     w = b / sum(b)
     print(w)
-    TsingTao = pd.read_csv(r"./data/TsingTao.csv")
-    TsingTao.index = TsingTao.iloc[:, 1]
-    TsingTao.index = pd.to_datetime(TsingTao.index, format="%Y-%m-%d")
-    TsingTao = TsingTao.iloc[:, 2:]
-    print(TsingTao.head(n=3))
-    Close = TsingTao.Close
+    Close = get_tsingtao_close()
     m1Close = Close[0:5]
     wec = w * m1Close
     print(sum(wec))
@@ -57,12 +55,7 @@ def show_wma():
 
 
 def show_ewma():
-    TsingTao = pd.read_csv(r"./data/TsingTao.csv")
-    TsingTao.index = TsingTao.iloc[:, 1]
-    TsingTao.index = pd.to_datetime(TsingTao.index, format="%Y-%m-%d")
-    TsingTao = TsingTao.iloc[:, 2:]
-    print(TsingTao.head(n=10))
-    Close = TsingTao.Close
+    Close = get_tsingtao_close()
     Ema5 = ma.ewmaCal(Close, 5, 0.2)
     print(Ema5.head())
     print(Ema5.tail())
@@ -74,12 +67,7 @@ def show_ewma():
 
 
 def show_chinaback():
-    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
-    ChinaBank.index = ChinaBank.iloc[:, 1]
-    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
-    ChinaBank = ChinaBank.iloc[:, 2:]
-    print(ChinaBank.head())
-    CBClose = ChinaBank.Close
+    CBClose = get_CBClose()
     print(CBClose.describe())
     Close15 = CBClose["2015"]
     Sma10 = ma.smaCal(Close15, 10)
@@ -110,11 +98,7 @@ def trade_single_ma():
     单均线交易策略
     :return:
     """
-    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
-    ChinaBank.index = ChinaBank.iloc[:, 1]
-    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
-    ChinaBank = ChinaBank.iloc[:, 2:]
-    CBClose = ChinaBank.Close
+    CBClose = get_CBClose()
     print(CBClose.head())
     CBSma10 = ma.smaCal(CBClose, 10)
     SmaSignal = pd.Series(0, CBClose.index)
@@ -152,11 +136,7 @@ def trade_double_ma():
     双均线交易策略
     :return:
     """
-    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
-    ChinaBank.index = ChinaBank.iloc[:, 1]
-    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
-    ChinaBank = ChinaBank.iloc[:, 2:]
-    CBClose = ChinaBank.Close
+    CBClose = get_CBClose()
     print(CBClose.head())
     Ssma5 = ma.smaCal(CBClose, 5)
     Lsma30 = ma.smaCal(CBClose, 30)
@@ -194,16 +174,20 @@ def trade_double_ma():
     plt.legend()
 
 
+def get_CBClose():
+    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
+    ChinaBank.index = ChinaBank.iloc[:, 1]
+    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
+    ChinaBank = ChinaBank.iloc[:, 2:]
+    return ChinaBank.Close
+
+
 def show_macd():
     """
     MACD交易策略
     :return:
     """
-    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
-    ChinaBank.index = ChinaBank.iloc[:, 1]
-    ChinaBank.index = pd.to_datetime(ChinaBank.index, format="%Y-%m-%d")
-    ChinaBank = ChinaBank.iloc[:, 2:]
-    CBClose = ChinaBank.Close
+    CBClose = get_CBClose()
     # print(CBClose.head())
     DIF = ma.ewmaCal(CBClose, 12, 2 / (1 + 12)) - ma.ewmaCal(CBClose, 26, 2 / (1 + 26))
     print(DIF.tail(n=3))
@@ -225,6 +209,7 @@ def show_macd():
     macddata['DEA'] = DEA['2015']
     macddata['MACD'] = MACD['2015']
     import candle
+    ChinaBank = pd.read_csv(r"./data/ChinaBank.csv")
     candle.candleLinePlots(
         ChinaBank['2015'],
         candleTitle='中国银行2015年日K线图',
@@ -234,6 +219,111 @@ def show_macd():
     )
 
 
+def trade_macd():
+    """
+    根据macd产生信号交易
+    :return:
+    """
+    CBClose = get_CBClose()
+    DIF = ma.ewmaCal(CBClose, 12, 2 / (1 + 12)) - ma.ewmaCal(CBClose, 26, 2 / (1 + 26))
+    DEA = ma.ewmaCal(DIF, 9, 2 / (1 + 9))
+    macdSignal = pd.Series(0, index=DIF.index[1:])
+    for i in range(1, len(DIF)):
+        if all([DIF[i] > DEA[i] > 0.0, DIF[i - 1] < DEA[i - 1]]):
+            macdSignal[i] = 1
+        elif all([DIF[i] < DEA[i] < 0.0, DIF[i - 1] > DEA[i - 1]]):
+            macdSignal[i] = -1
+    print(macdSignal.tail())
+    macdTrade = macdSignal.shift(1)
+    CBRet = CBClose / CBClose.shift(1) - 1
+    macdRet = (CBRet * macdTrade).dropna()
+    macdWinRate = len(macdRet[macdRet > 0]) / len(macdRet[macdRet != 0])
+    print(macdWinRate)
+
+
+def trade_multi():
+    CBClose = get_CBClose()
+    CBSma10 = ma.smaCal(CBClose, 10)
+    SmaSignal = pd.Series(0, CBClose.index)
+    for i in range(10, len(CBClose)):
+        if all([CBClose[i] > CBSma10[i], CBClose[i - 1] < CBSma10[i - 1]]):
+            SmaSignal[i] = 1
+        elif all([CBClose[i] < CBSma10[i], CBClose[i - 1] > CBSma10[i - 1]]):
+            SmaSignal[i] = -1
+    Ssma5 = ma.smaCal(CBClose, 5)
+    Lsma30 = ma.smaCal(CBClose, 30)
+    SLSignal = pd.Series(0, index=Lsma30.index)
+    for i in range(1, len(Lsma30)):
+        if all([Ssma5[i] > Lsma30[i], Ssma5[i - 1] < Lsma30[i - 1]]):
+            SLSignal[i] = 1
+        elif all([Ssma5[i] < Lsma30[i], Ssma5[i - 1] > Lsma30[i - 1]]):
+            SLSignal[i] = -1
+    DIF = ma.ewmaCal(CBClose, 12, 2 / (1 + 12)) - ma.ewmaCal(CBClose, 26, 2 / (1 + 26))
+    DEA = ma.ewmaCal(DIF, 9, 2 / (1 + 9))
+    macdSignal = pd.Series(0, index=DIF.index[1:])
+    for i in range(1, len(DIF)):
+        if all([DIF[i] > DEA[i] > 0.0, DIF[i - 1] < DEA[i - 1]]):
+            macdSignal[i] = 1
+        elif all([DIF[i] < DEA[i] < 0.0, DIF[i - 1] > DEA[i - 1]]):
+            macdSignal[i] = -1
+    AllSignal = SmaSignal + SLSignal + macdSignal
+    for i in AllSignal.index:
+        if AllSignal[i] > 1:
+            AllSignal[i] = 1
+        elif AllSignal[i] < -1:
+            AllSignal[i] = -1
+        else:
+            AllSignal[i] = 0
+    print(AllSignal[AllSignal == 1])
+    print(AllSignal[AllSignal == -1])
+    tradSig = AllSignal.shift(1).dropna()
+    CBClose = CBClose[-len(tradSig):]
+    asset = pd.Series(0.0, index=CBClose.index)
+    cash = pd.Series(0.0, index=CBClose.index)
+    share = pd.Series(0, index=CBClose.index)
+    entry = 3
+    cash[:entry] = 20000
+    while entry < len(CBClose):
+        cash[entry] = cash[entry - 1]
+        if all([CBClose[entry - 1] >= CBClose[entry - 2],
+                CBClose[entry - 2] >= CBClose[entry - 3],
+                AllSignal[entry - 1] != -1]):
+            share[entry] = 1000
+            cash[entry] = cash[entry] - 1000 * CBClose[entry]
+            break
+        entry += 1
+    i = entry + 1
+    while i < len(tradSig):
+        cash[i] = cash[i - 1]
+        share[i] = share[i - 1]
+        flag = 1
+        if tradSig[i] == 1:
+            share[i] = share[i] + 3000
+            cash[i] = cash[i] - 3000 * CBClose[i]
+        if all([tradSig[i] == -1, share[i] > 0]):
+            share[i] = share[i] - 1000
+            cash[i] = cash[i] + 1000 * CBClose[i]
+        i += 1
+    plt.subplot(411)
+    plt.title("2014-2015年上:中国银行均线交易账户")
+    plt.plot(CBClose, color='b')
+    plt.ylabel("Pricce")
+    plt.subplot(412)
+    plt.plot(share, color='b')
+    plt.ylabel("Share")
+    plt.ylim(0, max(share) + 1000)
+    plt.subplot(413)
+    plt.plot(asset, label="asset", color='r')
+    plt.ylabel("Asset")
+    plt.ylim(min(asset) - 5000, max(asset) + 5000)
+    plt.subplot(414)
+    plt.plot(cash, label="cash", color='g')
+    plt.ylabel("Cash")
+    plt.ylim(0, max(cash) + 5000)
+    TradeReturn = (asset[-1] - 20000) / 20000
+    return TradeReturn
+
+
 if __name__ == '__main__':
     print("ch30")
-    show_macd()
+    trade_multi()
