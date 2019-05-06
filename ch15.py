@@ -15,3 +15,6 @@ TRD_Index = pd.read_csv(r".\data\TRd_Index.txt", sep="\t")
 SHindex = TRD_Index[TRD_Index.Indexcd==1]
 SHRet = SHindex.Retindex
 print(SHRet.head())
+
+if __name__ == '__main__':
+    print("ch15")
