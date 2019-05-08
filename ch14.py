@@ -13,16 +13,14 @@ pd.set_option('display.max_columns', 8)
 plt.rcParams['font.sans-serif'] = ['SimHei']    # 用来正常显示中文标签
 plt.rcParams['axes.unicode_minus'] = False    # 用来正常显示负号
 
-# RandomNumber = np.random.choice([1, 2, 3, 4, 5], size=100, replace=True, p=[0.1, 0.1, 0.3, 0.3, 0.2])
-# print(RandomNumber)
-# print(pd.Series(RandomNumber).value_counts())
-# print(pd.Series(RandomNumber).value_counts() / 100)
 
-
-def show_return300():
+def basic_random_variable():
+    RandomNumber = np.random.choice([1, 2, 3, 4, 5], size=100, replace=True, p=[0.1, 0.1, 0.3, 0.3, 0.2])
+    print(pd.Series(RandomNumber).value_counts())
+    print(pd.Series(RandomNumber).value_counts() / 100)
     HSRet300 = pd.read_csv('./data/return300.csv')
     print(HSRet300.head())
-    density = stats.gaussian_kde(HSRet300.iloc[:, 1])
+    density = stats.kde.gaussian_kde(HSRet300.iloc[:,1])
     bins = np.arange(-5, 5, 0.02)
     plt.subplot(211)
     plt.plot(bins, density(bins))
@@ -98,4 +96,4 @@ def joint_demo():
 
 if __name__ == '__main__':
     print("ch14")
-    joint_demo()
+    basic_random_variable()
