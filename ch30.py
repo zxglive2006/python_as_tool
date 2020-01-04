@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import movingAverage as ma
+import moving_average as ma
 
 pd.set_option("display.width", 120)
 # 设定字体类型，用于正确显示中文
@@ -26,7 +26,7 @@ def show_sma():
     # plt.xlabel('date')
     # plt.ylabel('Close')
     # plt.title("2014年青岛啤酒股票收盘价时序图")
-    Sma5 = ma.smaCal(Close, 5)
+    Sma5 = ma.sma_cal(Close, 5)
     print(Sma5.tail())
     plt.plot(Close[4:], label="Close", color="g")
     plt.plot(Sma5[4:], label="Sma5", color="r", linestyle="dashed")
@@ -43,7 +43,7 @@ def show_wma():
     m1Close = Close[0:5]
     wec = w * m1Close
     print(sum(wec))
-    Wma5 = ma.wmaCal(Close, w)
+    Wma5 = ma.wma_cal(Close, w)
     for i in range(4, len(Wma5)):
         Wma5[i] = sum(w * Close[(i-4):(i+1)])
     print(Wma5[2:7])
@@ -56,7 +56,7 @@ def show_wma():
 
 def show_ewma():
     Close = get_tsingtao_close()
-    Ema5 = ma.ewmaCal(Close, 5, 0.2)
+    Ema5 = ma.ewma_cal(Close, 5, 0.2)
     print(Ema5.head())
     print(Ema5.tail())
     plt.plot(Close[4:], label="Close", color="k")
@@ -70,16 +70,16 @@ def show_chinaback():
     CBClose = get_CBClose()
     print(CBClose.describe())
     Close15 = CBClose["2015"]
-    Sma10 = ma.smaCal(Close15, 10)
+    Sma10 = ma.sma_cal(Close15, 10)
     print(Sma10.tail())
     weight = np.array(range(1, 11)) / sum(range(1, 11))
-    Wma10 = ma.wmaCal(Close15, weight)
+    Wma10 = ma.wma_cal(Close15, weight)
     print(Wma10.tail())
     expo = 2 / (len(Close15) + 1)
-    Ema10 = ma.ewmaCal(Close15, 10, expo)
+    Ema10 = ma.ewma_cal(Close15, 10, expo)
     print(Ema10.tail())
-    Sma5 = ma.smaCal(Close15, 5)
-    Sma30 = ma.smaCal(Close15, 30)
+    Sma5 = ma.sma_cal(Close15, 5)
+    Sma30 = ma.sma_cal(Close15, 30)
     # plt.plot(Close15[10:], label="Close", color="k")
     # plt.plot(Sma10[10:], label="Sma10", color="r", linestyle="dashed")
     # plt.plot(Wma10[10:], label="Wma10", color="b", linestyle=":")
@@ -100,7 +100,7 @@ def trade_single_ma():
     """
     CBClose = get_CBClose()
     print(CBClose.head())
-    CBSma10 = ma.smaCal(CBClose, 10)
+    CBSma10 = ma.sma_cal(CBClose, 10)
     SmaSignal = pd.Series(0, CBClose.index)
     for i in range(10, len(CBClose)):
         if all([CBClose[i] > CBSma10[i], CBClose[i - 1] < CBSma10[i - 1]]):
@@ -138,8 +138,8 @@ def trade_double_ma():
     """
     CBClose = get_CBClose()
     print(CBClose.head())
-    Ssma5 = ma.smaCal(CBClose, 5)
-    Lsma30 = ma.smaCal(CBClose, 30)
+    Ssma5 = ma.sma_cal(CBClose, 5)
+    Lsma30 = ma.sma_cal(CBClose, 30)
     SLSignal = pd.Series(0, index=Lsma30.index)
     for i in range(1, len(Lsma30)):
         if all([Ssma5[i] > Lsma30[i], Ssma5[i - 1] < Lsma30[i - 1]]):
@@ -189,9 +189,9 @@ def show_macd():
     """
     CBClose = get_CBClose()
     # print(CBClose.head())
-    DIF = ma.ewmaCal(CBClose, 12, 2 / (1 + 12)) - ma.ewmaCal(CBClose, 26, 2 / (1 + 26))
+    DIF = ma.ewma_cal(CBClose, 12, 2 / (1 + 12)) - ma.ewma_cal(CBClose, 26, 2 / (1 + 26))
     print(DIF.tail(n=3))
-    DEA = ma.ewmaCal(DIF, 9, 2 / (1 + 9))
+    DEA = ma.ewma_cal(DIF, 9, 2 / (1 + 9))
     print(DEA.tail())
     MACD = DIF - DEA
     print("MACD tail")
@@ -225,8 +225,8 @@ def trade_macd():
     :return:
     """
     CBClose = get_CBClose()
-    DIF = ma.ewmaCal(CBClose, 12, 2 / (1 + 12)) - ma.ewmaCal(CBClose, 26, 2 / (1 + 26))
-    DEA = ma.ewmaCal(DIF, 9, 2 / (1 + 9))
+    DIF = ma.ewma_cal(CBClose, 12, 2 / (1 + 12)) - ma.ewma_cal(CBClose, 26, 2 / (1 + 26))
+    DEA = ma.ewma_cal(DIF, 9, 2 / (1 + 9))
     macdSignal = pd.Series(0, index=DIF.index[1:])
     for i in range(1, len(DIF)):
         if all([DIF[i] > DEA[i] > 0.0, DIF[i - 1] < DEA[i - 1]]):
@@ -243,23 +243,23 @@ def trade_macd():
 
 def trade_multi():
     CBClose = get_CBClose()
-    CBSma10 = ma.smaCal(CBClose, 10)
+    CBSma10 = ma.sma_cal(CBClose, 10)
     SmaSignal = pd.Series(0, CBClose.index)
     for i in range(10, len(CBClose)):
         if all([CBClose[i] > CBSma10[i], CBClose[i - 1] < CBSma10[i - 1]]):
             SmaSignal[i] = 1
         elif all([CBClose[i] < CBSma10[i], CBClose[i - 1] > CBSma10[i - 1]]):
             SmaSignal[i] = -1
-    Ssma5 = ma.smaCal(CBClose, 5)
-    Lsma30 = ma.smaCal(CBClose, 30)
+    Ssma5 = ma.sma_cal(CBClose, 5)
+    Lsma30 = ma.sma_cal(CBClose, 30)
     SLSignal = pd.Series(0, index=Lsma30.index)
     for i in range(1, len(Lsma30)):
         if all([Ssma5[i] > Lsma30[i], Ssma5[i - 1] < Lsma30[i - 1]]):
             SLSignal[i] = 1
         elif all([Ssma5[i] < Lsma30[i], Ssma5[i - 1] > Lsma30[i - 1]]):
             SLSignal[i] = -1
-    DIF = ma.ewmaCal(CBClose, 12, 2 / (1 + 12)) - ma.ewmaCal(CBClose, 26, 2 / (1 + 26))
-    DEA = ma.ewmaCal(DIF, 9, 2 / (1 + 9))
+    DIF = ma.ewma_cal(CBClose, 12, 2 / (1 + 12)) - ma.ewma_cal(CBClose, 26, 2 / (1 + 26))
+    DEA = ma.ewma_cal(DIF, 9, 2 / (1 + 9))
     macdSignal = pd.Series(0, index=DIF.index[1:])
     for i in range(1, len(DIF)):
         if all([DIF[i] > DEA[i] > 0.0, DIF[i - 1] < DEA[i - 1]]):
