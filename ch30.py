@@ -66,7 +66,7 @@ def show_ewma():
     plt.legend()
 
 
-def show_chinaback():
+def show_chinabank():
     CBClose = get_CBClose()
     print(CBClose.describe())
     Close15 = CBClose["2015"]
@@ -74,23 +74,34 @@ def show_chinaback():
     print(Sma10.tail())
     weight = np.array(range(1, 11)) / sum(range(1, 11))
     Wma10 = ma.wma_cal(Close15, weight)
-    print(Wma10.tail())
+    print(Wma10.tail(n=3))
     expo = 2 / (len(Close15) + 1)
     Ema10 = ma.ewma_cal(Close15, 10, expo)
-    print(Ema10.tail())
+    print(Ema10.tail(n=3))
+    plt.rcParams["font.sans-serif"] = ["SimHei"]
+    plt.plot(Close15[10:], label="Close", color="k")
+    plt.plot(Sma10[10:], label="Sma10", color="r", linestyle="dashed")
+    plt.plot(Wma10[10:], label="Wma10", color="b", linestyle=":")
+    plt.plot(Ema10[10:], label="Ema10", color="G", linestyle="-.")
+    plt.title("中国银行价格均线")
+    plt.ylim(3.5, 5.5)
+    plt.legend()
+    plt.show()
+
+
+def show_chinabank_2():
+    CBClose = get_CBClose()
+    Close15 = CBClose["2015"]
     Sma5 = ma.sma_cal(Close15, 5)
     Sma30 = ma.sma_cal(Close15, 30)
-    # plt.plot(Close15[10:], label="Close", color="k")
-    # plt.plot(Sma10[10:], label="Sma10", color="r", linestyle="dashed")
-    # plt.plot(Wma10[10:], label="Wma10", color="b", linestyle=":")
-    # plt.plot(Ema10[10:], label="Ema10", color="G", linestyle="-.")
-    # plt.title("中国银行价格均线")
+    plt.rcParams["font.sans-serif"] = ["SimHei"]
     plt.plot(Close15[30:], label="Close", color="k")
     plt.plot(Sma5[30:], label="Sma5", color="b", linestyle="dashed")
     plt.plot(Sma30[30:], label="Sma30", color="r", linestyle=":")
     plt.title("中国银行股票价格的长短期均线")
     plt.ylim(3.5, 5.5)
     plt.legend()
+    plt.show()
 
 
 def trade_single_ma():
@@ -98,34 +109,33 @@ def trade_single_ma():
     单均线交易策略
     :return:
     """
-    CBClose = get_CBClose()
-    print(CBClose.head())
-    CBSma10 = ma.sma_cal(CBClose, 10)
-    SmaSignal = pd.Series(0, CBClose.index)
-    for i in range(10, len(CBClose)):
-        if all([CBClose[i] > CBSma10[i], CBClose[i - 1] < CBSma10[i - 1]]):
-            SmaSignal[i] = 1
-        elif all([CBClose[i] < CBSma10[i], CBClose[i - 1] > CBSma10[i - 1]]):
-            SmaSignal[i] = -1
-    SmaTrade = SmaSignal.shift(1).dropna()
-    SmaBuy = SmaTrade[SmaTrade == 1]
-    print(SmaBuy.head())
-    SmaSell = SmaTrade[SmaTrade == -1]
-    print(SmaSell.head())
-    CBRet = CBClose / CBClose.shift(1) - 1
-    SmaRet = (CBRet * SmaTrade).dropna()
-    print(SmaRet.head())
-    cumStock = np.cumprod(1 + CBRet[SmaRet.index[0]:]) - 1
-    cumTrade = np.cumprod(1 + SmaRet) - 1
+    cb_close = get_CBClose()
+    cb_sma10 = ma.sma_cal(cb_close, 10)
+    sma_signal = pd.Series(0, cb_close.index)
+    for i in range(10, len(cb_close)):
+        if all([cb_close[i] > cb_sma10[i], cb_close[i - 1] < cb_sma10[i - 1]]):
+            sma_signal[i] = 1
+        elif all([cb_close[i] < cb_sma10[i], cb_close[i - 1] > cb_sma10[i - 1]]):
+            sma_signal[i] = -1
+    sma_trade = sma_signal.shift(1).dropna()
+    sma_buy = sma_trade[sma_trade == 1]
+    print(sma_buy.head())
+    sma_sell = sma_trade[sma_trade == -1]
+    print(sma_sell.head())
+    cb_ret = cb_close / cb_close.shift(1) - 1
+    sma_ret = (cb_ret * sma_trade).dropna()
+    print(sma_ret.head())
+    cum_stock = np.cumprod(1 + cb_ret[sma_ret.index[0]:]) - 1
+    cumTrade = np.cumprod(1 + sma_ret) - 1
     cumdate = pd.DataFrame({
         'cumTrade': cumTrade,
-        'cumStock': cumStock
+        'cumStock': cum_stock
     })
     print(cumdate.iloc[-6:, :])
     # SmaRet[SmaRet == (-0)] = 0
-    smaWinrate = len(SmaRet[SmaRet > 0]) / len(SmaRet[SmaRet != 0])
+    smaWinrate = len(sma_ret[sma_ret > 0]) / len(sma_ret[sma_ret != 0])
     print(smaWinrate)
-    plt.plot(cumStock, label='cumStock', color='k')
+    plt.plot(cum_stock, label='cumStock', color='k')
     plt.plot(cumTrade, label='cumTrade', color='r', linestyle=':')
     plt.title('股票本身与均线交易的累计收益率')
     plt.legend()
@@ -188,7 +198,6 @@ def show_macd():
     :return:
     """
     CBClose = get_CBClose()
-    # print(CBClose.head())
     DIF = ma.ewma_cal(CBClose, 12, 2 / (1 + 12)) - ma.ewma_cal(CBClose, 26, 2 / (1 + 26))
     print(DIF.tail(n=3))
     DEA = ma.ewma_cal(DIF, 9, 2 / (1 + 9))
@@ -242,23 +251,23 @@ def trade_macd():
 
 
 def trade_multi():
-    CBClose = get_CBClose()
-    CBSma10 = ma.sma_cal(CBClose, 10)
-    SmaSignal = pd.Series(0, CBClose.index)
-    for i in range(10, len(CBClose)):
-        if all([CBClose[i] > CBSma10[i], CBClose[i - 1] < CBSma10[i - 1]]):
+    cb_close = get_CBClose()
+    cb_sma10 = ma.sma_cal(cb_close, 10)
+    SmaSignal = pd.Series(0, cb_close.index)
+    for i in range(10, len(cb_close)):
+        if all([cb_close[i] > cb_sma10[i], cb_close[i - 1] < cb_sma10[i - 1]]):
             SmaSignal[i] = 1
-        elif all([CBClose[i] < CBSma10[i], CBClose[i - 1] > CBSma10[i - 1]]):
+        elif all([cb_close[i] < cb_sma10[i], cb_close[i - 1] > cb_sma10[i - 1]]):
             SmaSignal[i] = -1
-    Ssma5 = ma.sma_cal(CBClose, 5)
-    Lsma30 = ma.sma_cal(CBClose, 30)
+    Ssma5 = ma.sma_cal(cb_close, 5)
+    Lsma30 = ma.sma_cal(cb_close, 30)
     SLSignal = pd.Series(0, index=Lsma30.index)
     for i in range(1, len(Lsma30)):
         if all([Ssma5[i] > Lsma30[i], Ssma5[i - 1] < Lsma30[i - 1]]):
             SLSignal[i] = 1
         elif all([Ssma5[i] < Lsma30[i], Ssma5[i - 1] > Lsma30[i - 1]]):
             SLSignal[i] = -1
-    DIF = ma.ewma_cal(CBClose, 12, 2 / (1 + 12)) - ma.ewma_cal(CBClose, 26, 2 / (1 + 26))
+    DIF = ma.ewma_cal(cb_close, 12, 2 / (1 + 12)) - ma.ewma_cal(cb_close, 26, 2 / (1 + 26))
     DEA = ma.ewma_cal(DIF, 9, 2 / (1 + 9))
     macdSignal = pd.Series(0, index=DIF.index[1:])
     for i in range(1, len(DIF)):
@@ -277,19 +286,19 @@ def trade_multi():
     print(AllSignal[AllSignal == 1])
     print(AllSignal[AllSignal == -1])
     tradSig = AllSignal.shift(1).dropna()
-    CBClose = CBClose[-len(tradSig):]
-    asset = pd.Series(0.0, index=CBClose.index)
-    cash = pd.Series(0.0, index=CBClose.index)
-    share = pd.Series(0, index=CBClose.index)
+    cb_close = cb_close[-len(tradSig):]
+    asset = pd.Series(0.0, index=cb_close.index)
+    cash = pd.Series(0.0, index=cb_close.index)
+    share = pd.Series(0, index=cb_close.index)
     entry = 3
     cash[:entry] = 20000
-    while entry < len(CBClose):
+    while entry < len(cb_close):
         cash[entry] = cash[entry - 1]
-        if all([CBClose[entry - 1] >= CBClose[entry - 2],
-                CBClose[entry - 2] >= CBClose[entry - 3],
+        if all([cb_close[entry - 1] >= cb_close[entry - 2],
+                cb_close[entry - 2] >= cb_close[entry - 3],
                 AllSignal[entry - 1] != -1]):
             share[entry] = 1000
-            cash[entry] = cash[entry] - 1000 * CBClose[entry]
+            cash[entry] = cash[entry] - 1000 * cb_close[entry]
             break
         entry += 1
     i = entry + 1
@@ -299,14 +308,14 @@ def trade_multi():
         flag = 1
         if tradSig[i] == 1:
             share[i] = share[i] + 3000
-            cash[i] = cash[i] - 3000 * CBClose[i]
+            cash[i] = cash[i] - 3000 * cb_close[i]
         if all([tradSig[i] == -1, share[i] > 0]):
             share[i] = share[i] - 1000
-            cash[i] = cash[i] + 1000 * CBClose[i]
+            cash[i] = cash[i] + 1000 * cb_close[i]
         i += 1
     plt.subplot(411)
     plt.title("2014-2015年上:中国银行均线交易账户")
-    plt.plot(CBClose, color='b')
+    plt.plot(cb_close, color='b')
     plt.ylabel("Pricce")
     plt.subplot(412)
     plt.plot(share, color='b')
@@ -321,9 +330,13 @@ def trade_multi():
     plt.ylabel("Cash")
     plt.ylim(0, max(cash) + 5000)
     TradeReturn = (asset[-1] - 20000) / 20000
-    return TradeReturn
+    print(TradeReturn)
+    plt.show()
 
 
 if __name__ == '__main__':
     print("ch30")
+    # show_chinabank()
+    # show_chinabank_2()
+    # trade_single_ma()
     trade_multi()
